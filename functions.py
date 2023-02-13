@@ -1,5 +1,13 @@
 import xarray as xr
 
+import string
+
+import matplotlib
+import matplotlib.pyplot as plt
+
+import cartopy
+import cartopy.crs as ccrs
+
 # ============================================================================
 # Data wrangling
 # ============================================================================
@@ -51,3 +59,27 @@ def open_era_data(root_path,
             
         ds_list.append(ds)
     return xr.concat(ds_list, dim=concat_dim)
+
+# ============================================================================
+# Plotting
+# ============================================================================
+
+letters = list(string.ascii_lowercase)
+
+def get_plot_params():
+    """
+    Get the plotting parameters used for figures
+    """
+    FONT_SIZE = 7
+    COASTLINES_LW = 0.5
+    LINEWIDTH = 1.3
+    PATHEFFECT_LW_ADD = LINEWIDTH * 1.8
+
+    return {'lines.linewidth': LINEWIDTH,
+            'hatch.linewidth': 0.5,
+            'font.size': FONT_SIZE,
+            'legend.fontsize' : FONT_SIZE - 1,
+            'legend.columnspacing': 0.7,
+            'legend.labelspacing' : 0.03,
+            'legend.handlelength' : 1.,
+            'axes.linewidth': 0.5}
