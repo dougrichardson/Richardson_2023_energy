@@ -1,5 +1,7 @@
 import xarray as xr
 
+import math
+
 import string
 
 import matplotlib
@@ -7,6 +9,26 @@ import matplotlib.pyplot as plt
 
 import cartopy
 import cartopy.crs as ccrs
+
+# ============================================================================
+# Misc
+# ============================================================================
+
+def round_decimals_up(number:float, decimals:int=2):
+    """
+    Returns a value rounded up to a specific number of decimal places.
+    
+    From: https://kodify.net/python/math/round-decimals/
+    """
+    if not isinstance(decimals, int):
+        raise TypeError("decimal places must be an integer")
+    elif decimals < 0:
+        raise ValueError("decimal places has to be 0 or more")
+    elif decimals == 0:
+        return math.ceil(number)
+
+    factor = 10 ** decimals
+    return math.ceil(number * factor) / factor
 
 # ============================================================================
 # Data wrangling
