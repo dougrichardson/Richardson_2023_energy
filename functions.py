@@ -104,4 +104,5 @@ def get_plot_params():
             'legend.columnspacing': 0.7,
             'legend.labelspacing' : 0.03,
             'legend.handlelength' : 1.,
-            'axes.linewidth': 0.5}
+            'axes.linewidth': 0.5,
+            'axes.titlesize': 10}
