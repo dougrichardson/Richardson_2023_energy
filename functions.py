@@ -105,4 +105,4 @@ def get_plot_params():
             'legend.labelspacing' : 0.03,
             'legend.handlelength' : 1.,
             'axes.linewidth': 0.5,
-            'axes.titlesize': 10}
+            'axes.titlesize': FONT_SIZE + 1}
