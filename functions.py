@@ -106,3 +106,13 @@ def get_plot_params():
             'legend.handlelength' : 1.,
             'axes.linewidth': 0.5,
             'axes.titlesize': FONT_SIZE + 1}
+
+def adjust_lightness(color, amount=0.5):
+    import matplotlib.colors
+    import colorsys
+    try:
+        c = matplotlib.colors.cnames[color]
+    except:
+        c = color
+    c = colorsys.rgb_to_hls(*matplotlib.colors.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], max(0, min(1, amount * c[1])), c[2])
