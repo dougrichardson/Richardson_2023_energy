@@ -77,6 +77,17 @@ def open_era_data(root_path,
         ds_list.append(ds)
     return xr.concat(ds_list, dim=concat_dim)
 
+def detrend_dim(da, dim, deg=1):
+    """
+    Detrend along a single dimension.
+    
+    Author: Ryan Abernathy
+    From: https://gist.github.com/rabernat/1ea82bb067c3273a6166d1b1f77d490f
+    """
+    p = da.polyfit(dim=dim, deg=deg)
+    fit = xr.polyval(da[dim], p.polyfit_coefficients)
+    return da - fit
+
 # ============================================================================
 # Defining and computing events
 # ============================================================================
