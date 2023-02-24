@@ -157,6 +157,25 @@ def get_all_events(da1, da2, count_compound_as_double=True, var_name='event'):
     
     return events.to_dataset(name=var_name)[var_name]
 
+def n_simultaneous_droughts(da, thresh, region_codes, mask):
+    da = da.sel(region=get_regions_from_region_codes(region_codes, mask))
+    return xr.where(da < thresh, 1, 0).sum('region')
+
+def seasonal_mean(da, time_name='time'):
+    """
+    Calculate seasonal means. Currently assumes da starts in January.
+    First aggregates to monthly means, then shifts everything forwards
+    one month, then aggregates over 3 months.
+    """
+    first_month = da[time_name].dt.month.values[0]
+    if first_month != 1:
+        raise ValueError("First month should be January. Adjust da or function.")
+        
+    # First aggregate to monthly as we want to shift a month ahead
+    m_da = da.resample({time_name: '1MS'}).mean()
+    # Now shift a month ahead and calculate 3-monthly means
+    return m_da.shift({time_name: 1}).resample({time_name: '3MS'}, skipna=True).mean()
+
 # ============================================================================
 # Plotting
 # ============================================================================
