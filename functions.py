@@ -6,6 +6,9 @@ import string
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.colors
+
+import colorsys
 
 import cartopy
 import cartopy.crs as ccrs
@@ -22,12 +25,25 @@ def get_REZ_boundary():
     return [133, 155, -10, -45]
 
 def get_rez_mask():
+    """
+    Open Renewable Energy Zones (REZ) mask on the ERA5 grid.
+    """
     return xr.open_dataset('/g/data/w42/dr6273/work/projects/Aus_energy/data/rez_mask_era5_grid.nc').REZ
 
 def get_gccsa_mask():
+    """
+    Open GCCSA mask on the ERA5 grid.
+    """
     return xr.open_dataset( '/g/data/w42/dr6273/work/projects/Aus_energy/data/gccsa_mask_era5_grid.nc').GCCSA
 
 def get_regions_from_region_codes(region_codes, mask):
+    """
+    Return the region IDs (N1, N2, etc.) given the region codes used to identify
+    the renewables type in each REZ.
+    
+    region_codes : list of integers in [1, 8]
+    mask : xarray DataArray of the desired mask.
+    """
     regions = [mask.region.values[i] for i in range(len(mask.region.values)) if
                mask.region_code.values[i] in region_codes]
     return regions
@@ -47,15 +63,15 @@ def open_era_data(root_path,
     """
     Open ERA5 data from NCI.
     
-    root_path: path to era5 data
-    variable: short name of variable used in path
-    years: range(first_year, last_year)
-    concat_dim: dimension name to concat over
-    subset_region: None, or select subregion using coordinates in a
+    root_path : path to era5 data
+    variable : short name of variable used in path
+    years : range(first_year, last_year)
+    concat_dim : dimension name to concat over
+    subset_region : None, or select subregion using coordinates in a
                     list like:[lon1, lon2, lat1, lat2]
-    lat_name: latitude dimension name
-    lon_name: longitude dimension name
-    rename_lon_lat: None, or list of desired lon/lat name
+    lat_name : latitude dimension name
+    lon_name : longitude dimension name
+    rename_lon_lat : None, or list of desired lon/lat name
     """
     ds_list = []
     for year in years:
@@ -93,6 +109,11 @@ def detrend_dim(da, dim, deg=1):
 # ============================================================================
 
 def get_events(da, thresh, tail='lower'):
+    """
+    Return binary DataArray of univariate events. 1 indicates an event, 0 no events.
+    Events are defined if they are below (tail='lower') or
+    above (tail='upper') a threshold.
+    """
     if tail == 'lower':
         return xr.where(da < thresh, 1, 0)
     elif tail == 'upper':
@@ -100,8 +121,29 @@ def get_events(da, thresh, tail='lower'):
     else:
         raise ValueError('Incorrect string for tail')
         
-def calculate_event_frequency(da, thresh,
-                              tail, time_name='time'):
+def get_compound_events(da1, da2, thresh1, thresh2, tail='lower'):
+    """
+    Return binary DataArray of compound events. 1 indicates an event, 0 no events.
+    Events are defined if they are both below (tail='lower') or
+    above (tail='upper') a threshold.
+    
+    Currently only lower tail thresholds for both variables is implemented.
+    """
+    if tail == 'lower':
+        events = xr.where(
+            (da1 < thresh1) &
+            (da2 < thresh2),
+            1, 0
+        )
+    else:
+        raise ValueError("Incorrect tail")
+        
+    return events
+        
+def calculate_event_frequency(da, thresh, tail, time_name='time'):
+    """
+    Relative frequency of events over a dimension (usually time).
+    """
     T = len(da[time_name].values)
     events = get_events(da, thresh, tail)
     freq = events.sum(time_name) / T
@@ -109,16 +151,11 @@ def calculate_event_frequency(da, thresh,
     return freq
 
 def calculate_compound_frequency(da1, da2, thresh1, thresh2, tail='lower', time_name='time'):
-    if tail == 'lower':
-        freq = xr.where(
-            (da1 < thresh1) &
-            (da2 < thresh2),
-            1, 0
-        ).sum(time_name) / len(da1[time_name].values)
-    else:
-        raise ValueError("Incorrect tail")
-        
-    return freq
+    """
+    Relative frequency of compound events over a dimension (usually time).
+    """
+    events = get_compound_events(da1, da2, thresh1, thresh2, tail=tail)
+    return events.sum(time_name) / len(da1[time_name].values)
 
 def get_event_years(da, thresh, tail='lower', time_name='time'):
     """
@@ -144,11 +181,17 @@ def get_event_years(da, thresh, tail='lower', time_name='time'):
     return event_years, other_years
 
 def concurrent_lulls(da, region_codes, mask):
+    """
+    Total number of univariate events across desired subset of regions.
+    """
     return da.sel(
         region=get_regions_from_region_codes(region_codes, mask)
     ).sum('region')
 
 def concurrent_univariate_or_compound_lulls(compound_da, univ_da, region_codes, mask, var_name='event'):
+    """
+    Total number of events (univariate or compound) across desired subset of regions.
+    """
     events = xr.where(
         compound_da == 0,
         univ_da, 0
@@ -159,6 +202,10 @@ def concurrent_univariate_or_compound_lulls(compound_da, univ_da, region_codes, 
     return events[var_name]
 
 def get_all_events(da1, da2, count_compound_as_double=True, var_name='event'):
+    """
+    Total number of events for two variables across all regions. Can count
+    compound events as double or single.
+    """
     events = da1 + da2
     
     if count_compound_as_double == False: # Set compound days (coded as a 2) to 1.
@@ -169,6 +216,9 @@ def get_all_events(da1, da2, count_compound_as_double=True, var_name='event'):
     return events.to_dataset(name=var_name)[var_name]
 
 def n_simultaneous_droughts(da, thresh, region_codes, mask):
+    """
+    Number of concurrent droughts across desired subset of regions.
+    """
     da = da.sel(region=get_regions_from_region_codes(region_codes, mask))
     return xr.where(da < thresh, 1, 0).sum('region')
 
@@ -213,8 +263,9 @@ def get_plot_params():
             'axes.titlesize': FONT_SIZE + 1}
 
 def adjust_lightness(color, amount=0.5):
-    import matplotlib.colors
-    import colorsys
+    """
+    Adjust the lightness of a specified colour.
+    """
     try:
         c = matplotlib.colors.cnames[color]
     except:
@@ -227,6 +278,9 @@ def adjust_lightness(color, amount=0.5):
 # ============================================================================
 
 def get_seasons():
+    """
+    Return month numbers of each season.
+    """
     return {
         'Annual': range(1, 13),
         'Winter': [6, 7, 8],
