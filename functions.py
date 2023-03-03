@@ -138,7 +138,9 @@ def get_compound_events(da1, da2, thresh1, thresh2, tail='lower'):
     else:
         raise ValueError("Incorrect tail")
         
-    return events
+    events = events.to_dataset(name='compound')
+    
+    return events['compound']
         
 def calculate_event_frequency(da, thresh, tail, time_name='time'):
     """
