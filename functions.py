@@ -1,13 +1,12 @@
 import xarray as xr
-
+# import numpy as np
+# import dask
 import math
-
 import string
 
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors
-
 import colorsys
 
 import cartopy
@@ -103,6 +102,24 @@ def detrend_dim(da, dim, deg=1):
     p = da.polyfit(dim=dim, deg=deg)
     fit = xr.polyval(da[dim], p.polyfit_coefficients)
     return da - fit
+
+def month_subset(da, months, time_name='time'):
+    """
+    Subset the dataArray by month.
+    """
+    return da.isel({time_name: da.time.dt.month.isin(months)})
+
+# def switch_lons(ds, lon_name='lon'):
+#     """
+#     Switches lons from -180-180 to 0-360 or vice versa
+#     """
+#     ds = ds.copy()
+#     with dask.config.set(**{'array.slicing.split_large_chunks': True}):
+#         if np.any(ds.coords[lon_name] < 0): # if current coords are -180 to 180
+#             ds.coords[lon_name] = (ds.coords[lon_name] + 360) % 360
+#         else:
+#             ds.coords[lon_name] = (ds.coords[lon_name] + 180) % 360 - 180
+#         return ds.sortby(ds[lon_name])
 
 # ============================================================================
 # Defining and computing events
