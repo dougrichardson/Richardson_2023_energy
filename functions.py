@@ -3,6 +3,7 @@ import xarray as xr
 # import dask
 import math
 import string
+from xhistogram.xarray import histogram
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -323,3 +324,11 @@ def round_decimals_up(number:float, decimals:int=2):
 
     factor = 10 ** decimals
     return math.ceil(number * factor) / factor
+
+def hist_data(da, bins):
+    """
+    Compute the histogram.
+    """
+    h = histogram(da, bins=[bins], density=True)
+    h = h.rename({list(h.coords)[0]: 'bin'})
+    return h['bin'], h
