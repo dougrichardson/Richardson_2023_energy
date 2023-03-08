@@ -61,7 +61,9 @@ def open_era_data(root_path,
                   lon_name='longitude',
                   rename_lon_lat=None,
                   subset_level=None,
-                  level_name='level'):
+                  level_name='level',
+                  preprocess_func=None,
+                  mfdataset_chunks=None):
     """
     Open ERA5 data from NCI.
     
@@ -74,11 +76,18 @@ def open_era_data(root_path,
     lat_name : latitude dimension name
     lon_name : longitude dimension name
     rename_lon_lat : None, or list of desired lon/lat name
+    subset_level : None, or select levels in a list
+    level_name : name of level dimension
+    preprocess_func : bool. None, or a function passed to open_mfdataset
+    mfdataset_chunks : None, or how open_mfdataset should chunk
     """
     ds_list = []
     for year in years:
         fp = root_path+variable+'/'+str(year)+'/*.nc'
-        ds = xr.open_mfdataset(fp)
+        if preprocess_func is None:
+            ds = xr.open_mfdataset(fp)
+        else:
+            ds = xr.open_mfdataset(fp, chunks=mfdataset_chunks, preprocess=preprocess_func)
         
         if isinstance(subset_region, list):
             ds = ds.sel({
