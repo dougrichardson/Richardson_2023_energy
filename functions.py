@@ -59,7 +59,9 @@ def open_era_data(root_path,
                   subset_region=None,
                   lat_name='latitude',
                   lon_name='longitude',
-                  rename_lon_lat=None):
+                  rename_lon_lat=None,
+                  subset_level=None,
+                  level_name='level'):
     """
     Open ERA5 data from NCI.
     
@@ -88,6 +90,11 @@ def open_era_data(root_path,
             ds = ds.rename({
                 lon_name: rename_lon_lat[0],
                 lat_name: rename_lon_lat[1],
+            })
+            
+        if isinstance(subset_level, list):
+            ds = ds.sel({
+                level_name: subset_level
             })
             
         ds_list.append(ds)
