@@ -271,7 +271,7 @@ def seasonal_mean(da, time_name='time'):
     # First aggregate to monthly as we want to shift a month ahead
     m_da = da.resample({time_name: '1MS'}).mean()
     # Now shift a month ahead and calculate 3-monthly means
-    return m_da.shift({time_name: 1}).resample({time_name: '3MS'}, skipna=True).mean()
+    return m_da.shift({time_name: 1}).resample({time_name: '3MS'}).mean(skipna=False)
 
 # ============================================================================
 # Plotting
