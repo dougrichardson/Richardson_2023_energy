@@ -120,6 +120,16 @@ def detrend_dim(da, dim, deg=1):
     fit = xr.polyval(da[dim], p.polyfit_coefficients)
     return da - fit
 
+def daily_mean_1400(ds):
+    """
+    Daily average of ds. Computed for 24 hour periods
+    starting at 1400UTC (so an eastern Aus day, roughly).
+    Currently hard-coded as its easier with open_mfdataset preprocess/
+    """
+    ds_24 = ds.rolling(time=24).mean()
+    ds_daily = ds_24.isel(time=ds_24.time.dt.hour == 14)
+    return ds_daily
+
 def month_subset(da, months, time_name='time'):
     """
     Subset the dataArray by month.
