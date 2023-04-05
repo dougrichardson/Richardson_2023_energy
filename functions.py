@@ -24,6 +24,13 @@ def get_REZ_boundary():
     """
     return [133, 155, -10, -45]
 
+def get_extended_AUS_boundary():
+    """
+    Returns a list of bounding coordinates for a region
+    surrounding Australia.
+    """
+    return [100, 180, 10, -60]
+
 def get_rez_mask():
     """
     Open Renewable Energy Zones (REZ) mask on the ERA5 grid.
