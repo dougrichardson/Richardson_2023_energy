@@ -305,15 +305,18 @@ def get_plot_params():
     LINEWIDTH = 1.3
     PATHEFFECT_LW_ADD = LINEWIDTH * 1.8
 
-    return {'lines.linewidth': LINEWIDTH,
-            'hatch.linewidth': 0.5,
-            'font.size': FONT_SIZE,
-            'legend.fontsize' : FONT_SIZE - 1,
-            'legend.columnspacing': 0.7,
-            'legend.labelspacing' : 0.03,
-            'legend.handlelength' : 1.,
-            'axes.linewidth': 0.5,
-            'axes.titlesize': FONT_SIZE + 1}
+    return {
+        # 'figure.dpi': 400,
+        'lines.linewidth': LINEWIDTH,
+        'hatch.linewidth': 0.5,
+        'font.size': FONT_SIZE,
+        'legend.fontsize' : FONT_SIZE - 1,
+        'legend.columnspacing': 0.7,
+        'legend.labelspacing' : 0.03,
+        'legend.handlelength' : 1.,
+        'axes.linewidth': 0.5,
+        'axes.titlesize': FONT_SIZE + 1
+    }
 
 def adjust_lightness(color, amount=0.5):
     """
