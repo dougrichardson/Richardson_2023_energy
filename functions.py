@@ -290,6 +290,37 @@ def seasonal_mean(da, time_name='time'):
     # Now shift a month ahead and calculate 3-monthly means
     return m_da.shift({time_name: 1}).resample({time_name: '3MS'}).mean(skipna=False)
 
+def get_spatial_events(da, season, q, time_name='time'):
+    """
+    Subsample the time steps which are spatially compounding,
+    defined as when the number of regions experiencing an event
+    exceeds a quantile threshold (q). Can be done by season.
+    """
+    months = get_seasons()[season] # months in this season
+    subset_da = month_subset(da, months, time_name) # select data in this season
+    thresh = subset_da.quantile(q, time_name) # top q extensive events
+    events = subset_da.where(subset_da > thresh)
+    n_events = events.count().values # number of events
+    years = events.dropna(time_name)[time_name].dt.year.values # Years that events occurred in
+    
+    return years, events, n_events
+
+def subset_on_events(event_da, diag_da, season, q, time_name='time'):
+    """
+    Obtain the diagnostic variable array over event years.
+    """
+    years, events, n_events = get_spatial_events(event_da, season, q, time_name)
+    diag = month_subset(diag_da, get_seasons()[season])
+    diag = diag.where(events.notnull())
+    return years, events, n_events, diag
+
+def composite_data(event_da, diag_da, season, q, time_name='time'):
+    """
+    Composite (average) the diagnostic array over event years.
+    """
+    years, events, n_events, diag = subset_on_events(event_da, diag_da, season, q, time_name)
+    return years, n_events, diag.mean(time_name)
+
 # ============================================================================
 # Plotting
 # ============================================================================
